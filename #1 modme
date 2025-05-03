@@ -1,0 +1,24 @@
+import React from 'react';
+import './App.css';
+
+const App = () => {
+  return (
+    <div className="App">
+      <header className="bg-blue-600 text-white p-4">
+        <h1 className="text-3xl font-bold">Browser Use</h1>
+        <p className="text-xl">An open-source framework for AI agents</p>
+      </header>
+      <section className="p-4">
+        <h2 className="text-2xl font-semibold">What it is</h2>
+        <p className="text-lg">An open-source framework that connects AI agents directly to web browsers, enabling them to perform tasks like website deployment, form filling, data extraction, and multi-step workflows.</p>
+      </section>
+      <section className="p-4 bg-gray-100">
+        <h2 className="text-2xl font-semibold">Key features</h2>
+        <ul className="list-disc list-inside">
+          <li>Free and MIT-licensed</li>
+          <li>Human-like browser interaction</li>
+          <li>Flexible LLM integration</li>
+          <li>Task automation</li>
+          <li>Hosted cloud option</li>
+        </ul>
+      </section>
