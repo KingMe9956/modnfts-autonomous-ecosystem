@@ -1,0 +1,10 @@
+# 1. Deploy Core Protocol
+npm install @modnfts/core # Your private package
+npx hardhat deploy --network mainnet
+
+# 2. Build NFTEED IT Frontend
+git clone https://github.com/modNFTs/nfteed-it.git
+cd nfteed-it && npm run build
+
+# 3. Connect Domains
+# DNS A Record @nfteedit.com -> modNFTsCluster (IP: 192.0.2.1)
