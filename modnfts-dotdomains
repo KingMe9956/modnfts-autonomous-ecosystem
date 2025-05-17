@@ -1,0 +1,243 @@
+"use client"
+
+import { useState } from "react"
+import { ArrowLeft, Check, Info } from "lucide-react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+export default function DomainSearchPage() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedTld, setSelectedTld] = useState(".hns")
+  const [searchResults, setSearchResults] = useState<null | { available: boolean; price: number }>(null)
+
+  const handleSearch = () => {
+    // In a real app, this would check domain availability via the Handshake API
+    // For demo purposes, we'll simulate a response
+    const available = Math.random() > 0.8 // 70% chance of domain being available
+    const price = selectedTld === ".hns" ? 125 : selectedTld === ".c" ? 200 : selectedTld === ".wallet" ? 50 : 75
+
+    setSearchResults({ available, price })
+  }
+
+  return (
+    <div className="container max-w-6xl py-8">
+      <div className="mb-8">
+        <Link href="/" className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Link>
+      </div>
+
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2 space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Domain Search</h1>
+            <p className="text-muted-foreground mt-2">
+              Find and register your perfect Domain Chain domain with one payment for lifetime ownership.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex-1 relative">
+                <Input
+                  type="text"
+                  placeholder="Enter domain name"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <Select value={selectedTld} onValueChange={setSelectedTld}>
+                <SelectTrigger className="w-full sm:w-[150px]">
+                  <SelectValue placeholder="Select TLD" />
+                </SelectTrigger>
+                <SelectContent>6">.blockchain</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleSearch}>Search</Button>
+            </div>
+
+            {searchResults && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle>
+                      {searchTerm}
+                      {selectedTld}
+                    </CardTitle>
+                    {searchResults.available ? (
+                      <div className="flex items-center text-green-600">
+                        <Check className="mr-1 h-4 w-4" />
+                        <span>Available</span>
+                      </div>
+                    ) : (
+                      <div className="text-red-500">Unavailable</div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  {searchResults.available ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">One-time registration fee</span>
+                        <span className="font-medium">${searchResults.price}.00</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm bg-muted/50 p-3 rounded-md">
+                        <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <p>This is a one-time payment. You'll own this domain for life with no renewal fees.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">This domain is already registered.</p>
+                      <div className="flex items-start gap-2 text-sm bg-muted/50 p-3 rounded-md">
+                        <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <p>
+                          Try a different domain name or TLD. You can also check Domain Chain marketplace for domains available
+                          for sale.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter>
+                  {searchResults.available ? (
+                    <Button className="w-full">Register Domain</Button>
+                  ) : (
+                    <Button variant="outline" className="w-full">
+                      View Similar Domains
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            )}
+
+            <div className="pt-6">
+              <h2 className="text-xl font-bold mb-4">Popular TLDs</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {[
+                  { name: ".hns", price: "$125", desc: "The standard Handshake TLD" },
+                  { name: ".c", price: "$200", desc: "Premium single-letter TLD" },
+                  { name: ".wallet", price: "$150", desc: "Perfect for crypto services" },
+                  { name: ".crypto", price: "$175", desc: "Ideal for blockchain projects" },
+                  { name: ".blockchain", price: "$160", desc: "For Web3 applications" },
+                  { name: ".web3", price: "$80", desc: "Decentralized web presence" },
+                ].map((tld) => (
+                  <Card key={tld.name} className="border">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{tld.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <p className="text-sm text-muted-foreground">{tld.desc}</p>
+                    </CardContent>
+                    <CardFooter className="pt-2">
+                      <div className="w-full flex justify-between items-center">
+                        <span className="font-medium">{tld.price}</span>
+                        <Button variant="outline" size="sm">
+                          Search
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Card className="sticky top-20">
+            <CardHeader>
+              <CardTitle>Why Choose dot.domains?</CardTitle>
+              <CardDescription>Decentralized domains with lifetime ownership</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium">One-time Payment</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Pay once and own your domain forever. No renewal fees.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Decentralized</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Built on blockchain technology. No central authority can take it away.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Fully Transferable</h3>
+                  <p className="text-sm text-muted-foreground">Transfer ownership or sell your domain at any time.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Web3 Ready</h3>
+                  <p className="text-sm text-muted-foreground">Perfect for decentralized websites and applications.</p>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full">
+                Learn More About Domain Chain
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+
+      <div className="mt-16 border-t pt-8">
+        <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <h3 className="font-bold">How do Domain Chain domains work?</h3>
+            <p className="text-sm text-muted-foreground">
+              Domain C VR domains use blockchain technology to create a decentralized naming system. Unlike traditional
+              domains, they're not controlled by any central authority.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-bold">Do I really own the domain forever?</h3>
+            <p className="text-sm text-muted-foreground">
+              Yes, once you register a  domain, you own it permanently with no renewal fees. It's secured by
+              blockchain technology.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-bold">How do I buy a Domain Chain domain?</h3>
+            <p className="text-sm text-muted-foreground">
+              You can use your domain for websites, email, crypto wallets, and more. We provide tools and guides to help
+              you set everything up.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-bold">Can I sell my domain later?</h3>
+            <p className="text-sm text-muted-foreground">
+              Absolutely. Domain Chain domains are fully transferable assets. You can sell or transfer them at any time.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
