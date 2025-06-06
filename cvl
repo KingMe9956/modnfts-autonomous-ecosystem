@@ -1,4 +1,11 @@
-invariant ownershipTrace(uint256 tokenId, uint index) {
+rule serviceRecordPermanence(uint256 tokenId, uint recordId) {
+    ServiceRecord memory sr = getServiceHistory(tokenId)[recordId];
+    assert sr.timestamp <= block.timestamp,
+        "Service records cannot be from the future";
+    
+    assert sr.mechanic != address(0) => getMechanicReputation(sr.mechanic) > 0,
+        "Active mechanics must be verified";
+}invariant ownershipTrace(uint256 tokenId, uint index) {
     require index < getVehicleDetails(tokenId).previousOwners.length;
     address prevOwner = getVehicleDetails(tokenId).previousOwners[index];
     assert exists uint j :: getVehicleDetails(tokenId).previousOwners[j] == prevOwner,
