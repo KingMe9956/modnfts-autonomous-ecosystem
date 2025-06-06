@@ -1,0 +1,31 @@
+// Certora Verification Language (CVL) Rules
+
+// Rule 1: Valid VIN Enforcement
+rule vinLength(uint256 tokenId) {
+    VehicleDetails memory d = getVehicleDetails(tokenId);
+    assert bytes(d.vin).length == 17,
+        "VIN must be 17 characters";
+}
+
+// Rule 2: Single Ownership Invariant
+invariant uniqueOwnership(address owner) {
+    require numTokensOf(owner) > 0;
+    assert numTokensOf(owner) == 1,
+        "One address cannot own multiple vehicle NFTs";
+}
+
+// Rule 3: Mechanic Verification Access Control
+rule mechanicVerification(address mechanic) {
+    env e;
+    verifyMechanic@withrevert(e, mechanic, "ipfs://cert");
+    assert lastReverted == (msg.sender != owner()),
+        "Only owner can verify mechanics";
+}
+
+// Rule 4: Royalty Percentage Constancy
+invariant fixedRoyalty() {
+    uint256 salePrice = 1 ether;
+    (, uint256 royalty) = royaltyInfo(0, salePrice);
+    assert royalty == (salePrice * 75) / 1000,
+        "Royalty must remain 7.5%";
+}
