@@ -1,4 +1,9 @@
-// Certora Verification Language (CVL) Rules
+invariant ownershipTrace(uint256 tokenId, uint index) {
+    require index < getVehicleDetails(tokenId).previousOwners.length;
+    address prevOwner = getVehicleDetails(tokenId).previousOwners[index];
+    assert exists uint j :: getVehicleDetails(tokenId).previousOwners[j] == prevOwner,
+        "Ownership history corrupted";
+}// Certora Verification Language (CVL) Rules
 
 // Rule 1: Valid VIN Enforcement
 rule vinLength(uint256 tokenId) {
