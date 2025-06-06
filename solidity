@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+contract ModNFTsAutomotive is ERC721, Ownable {
+    using Counters for Counters.Counter;
+    
+    struct VehicleDetails {
+        string vin;
+        uint256 mileage;
+        address[] previousOwners;
+        VehicleType vehicleType;
+        bool isElectric;
+        uint256 batteryCapacity; // kWh for EVs
+        uint256 displacement; // CC for combustion
+    }
+
+    struct ServiceRecord {
+        uint256 timestamp;
+        address mechanic;
+        string serviceDetails;
+        bytes32 ipfsHash;
+    }
+
+    enum VehicleType { CLASSIC, MODERN, CUSTOM }
+
+    Counters.Counter private _tokenIdCounter;
+    mapping(uint256 => VehicleDetails) private _vehicleData;
+    mapping(uint256 => ServiceRecord[]) private _serviceHistory;
+    mapping(address => uint256) private _mechanicReputation;
+
+    event VehicleMinted(address indexed owner, uint256 tokenId, VehicleType vType);
+    event ServiceRecordAdded(uint256 tokenId, address mechanic);
+    event OwnershipTransferred(uint256 tokenId, address from, address to);
+
+    constructor() ERC721("modNFTs Automotive", "MODA") Ownable(msg.sender) {}
+
+    // Core Minting Function
+    function mintVehicle(
+        address to,
+        string memory vin,
+        VehicleType vehicleType,
+        bool isElectric,
+        uint256 powerSpec
+    ) public returns (uint256) {
+        require(bytes(vin).length == 17, "Invalid VIN");
+        
+        uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+
+        _vehicleData[tokenId] = VehicleDetails({
+            vin: vin,
+            mileage: 0,
+            previousOwners: new address[](0),
+            vehicleType: vehicleType,
+            isElectric: isElectric,
+            batteryCapacity: isElectric ? powerSpec : 0,
+            displacement: !isElectric ? powerSpec : 0
+        });
+
+        _safeMint(to, tokenId);
+        emit VehicleMinted(to, tokenId, vehicleType);
+        return tokenId;
+    }
+
+    // Automotive-Specific Functions
+    function addServiceRecord(
+        uint256 tokenId,
+        address mechanic,
+        string memory details,
+        bytes32 ipfsHash
+    ) public {
+        require(_isApprovedOrOwner(msg.sender, tokenId), "Not authorized");
+        require(_mechanicReputation[mechanic] > 0, "Unverified mechanic");
+        
+        _serviceHistory[tokenId].push(ServiceRecord({
+            timestamp: block.timestamp,
+            mechanic: mechanic,
+            serviceDetails: details,
+            ipfsHash: ipfsHash
+        }));
+        
+        _mechanicReputation[mechanic]++;
+        emit ServiceRecordAdded(tokenId, mechanic);
+    }
+
+    function transferVehicle(address to, uint256 tokenId) public {
+        safeTransferFrom(msg.sender, to, tokenId);
+        _vehicleData[tokenId].previousOwners.push(msg.sender);
+        _vehicleData[tokenId].mileage += 1000; // Simulated usage
+        emit OwnershipTransferred(tokenId, msg.sender, to);
+    }
+
+    // Mechanic Reputation System
+    function verifyMechanic(address mechanic, string memory certURI) public onlyOwner {
+        _mechanicReputation[mechanic] = 1;
+        // Would include off-chain cert verification in real implementation
+    }
+
+    // Royalty System (ERC-2981 compatible)
+    function royaltyInfo(uint256 tokenId, uint256 salePrice)
+        public
+        view
+        returns (address receiver, uint256 royaltyAmount)
+    {
+        require(_exists(tokenId), "Nonexistent token");
+        uint256 royalty = (salePrice * 750) / 10000; // 7.5% royalty
+        return (owner(), royalty);
+    }
+
+    // Getters
+    function getVehicleDetails(uint256 tokenId) public view returns (VehicleDetails memory) {
+        return _vehicleData[tokenId];
+    }
+
+    function getServiceHistory(uint256 tokenId) public view returns (ServiceRecord[] memory) {
+        return _serviceHistory[tokenId];
+    }
+
+    function getMechanicReputation(address mechanic) public view returns (uint256) {
+        return _mechanicReputation[mechanic];
+    }
+}
