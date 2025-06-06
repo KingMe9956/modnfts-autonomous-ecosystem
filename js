@@ -1,3 +1,9 @@
+// Request body
+{
+  "signature": "0x...",
+  "message": "NFTEED IT! Login: 123456",
+  "publicAddress": "0x..."
+}
 // Example of part swapping
 async function swapPart(partName, newPartUrl) {
   const loader = new GLTFLoader();
