@@ -1,0 +1,14 @@
+name: Formal Verification
+on: [push]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Verify Contracts
+        run: |
+          pip install certora-cli
+          certoraRun certora/conf/verify.conf
+        env:
+          CERTORAKEY: ${{ secrets.CERTORA_KEY }}
