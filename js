@@ -22,3 +22,18 @@ async function uploadToIPFS(data) {
     const { cid } = await ipfs.add(data);
     return cid.toString();
 }
+// Example mint function
+async function mintNFT(metadataCID) {
+    const contract = new ethers.Contract(
+        modNFTsContractAddress,
+        modNFTsABI,
+        signer
+    );
+    
+    const tx = await contract.mintNFT(
+        `ipfs://${metadataCID}`,
+        { value: mintFee }
+    );
+    
+    return tx.wait();
+}
