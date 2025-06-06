@@ -1,4 +1,34 @@
-// SPDX-License-Identifier: MIT
+mapping(address => mapping(string => uint256)) private _certExpiry;
+
+function renewCertification(
+    address mechanic, 
+    string calldata cert,
+    uint256 expiryDate
+) external onlyRole(VERIFIER_ROLE) {
+    require(_certExpiry[mechanic][cert] < block.timestamp, 
+        "Certification still valid");
+    _certExpiry[mechanic][cert] = expiryDate;
+}function resolveDispute(
+    address mechanic,
+    bool isValid,
+    uint256 penalty
+) external onlyRole(VERIFIER_ROLE) {
+    if (!isValid) {
+        _mechanics[mechanic].reputationScore = 
+            _mechanics[mechanic].reputationScore > penalty ? 
+            _mechanics[mechanic].reputationScore - penalty : 0;
+        _mechanics[mechanic].disputeCount++;
+    }
+    
+    emit DisputeResolved(mechanic, isValid);
+}
+function getMechanicTier(address mechanic) public view returns (string memory) {
+    uint256 score = _mechanics[mechanic].reputationScore;
+    if (score > 500) return "Master";
+    if (score > 300) return "Expert";
+    if (score > 100) return "Certified";
+    return "Novice";
+}// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
