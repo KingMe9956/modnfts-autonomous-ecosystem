@@ -1,4 +1,308 @@
-<!-- Create index.html with this code -->
+<!-- Add these script tags in the head section -->
+<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/",
+      "three/": "https://unpkg.com/three@0.150.1/"
+    }
+  }
+</script>
+
+<!-- Update the editor-container section -->
+<section class="editor-container" id="editor">
+  <div id="editor-ui" style="position: absolute; top: 20px; left: 20px; z-index: 1;">
+    <select id="car-select">
+      <option value="classic">1967 Mustang</option>
+      <option value="modern">Tesla Model S</option>
+    </select>
+    <input type="color" id="color-picker" value="#ff0000">
+    <button onclick="changeWheels()">Next Wheel Design</button>
+  </div>
+</section>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+let scene, camera, renderer, controls, currentCar;
+let wheelIndex = 0;
+
+function initThreeJS() {
+  // Scene setup
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, 600);
+  renderer.setClearColor(0x1a1a1a);
+  document.getElementById('editor').appendChild(renderer.domElement);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambientLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight.position.set(5, 5, 5);
+  scene.add(directionalLight);
+
+  // Controls
+  controls = new OrbitControls(camera, renderer.domElement);
+  camera.position.set(3, 2, 5);
+  controls.update();
+
+  // Load initial car
+  loadCarModel('classic');
+}
+
+async function loadCarModel(type) {
+  const loader = new GLTFLoader();
+  const modelUrl = type === 'classic' 
+    ? 'https://cdn.glitch.global/your-classic-car-model.glb'
+    : 'https://cdn.glitch.global/your-modern-car-model.glb';
+
+  try {
+    const gltf = await loader.loadAsync(modelUrl);
+    if (currentCar) scene.remove(currentCar);
+    currentCar = gltf.scene;
+    scene.add(currentCar);
+    centerModel();
+  } catch (error) {
+    console.error('Error loading model:', error);
+  }
+}
+
+function centerModel() {
+  const box = new THREE.Box3().setFromObject(currentCar);
+  const center = box.getCenter(new THREE.Vector3());
+  currentCar.position.sub(center);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// Customization functions
+document.getElementById('car-select').addEventListener('change', (e) => {
+  loadCarModel(e.target.value);
+});
+
+document.getElementById('color-picker').addEventListener('input', (e) => {
+  if (currentCar) {
+    currentCar.traverse((child) => {
+      if (child.isMesh) {
+        child.material.color.set(e.target.value);
+      }
+    });
+  }
+});
+
+function changeWheels() {
+  if (!currentCar) return;
+  const wheels = currentCar.children.filter(child => child.name.includes('wheel'));
+  wheelIndex = (wheelIndex + 1) % 3;
+  wheels.forEach(wheel => {
+    // Replace this with actual wheel geometry changes
+    wheel.rotation.y += Math.PI/4;
+  });
+}
+
+// Initialize and start animation
+initThreeJS();
+animate();
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, 600);
+});
+</script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFTEED IT - Automotive NFT Platform</title>
+    <style>
+        :root {
+            --primary: #FF4D00; /* Orange accent */
+            --secondary: #1A1A1A; /* Dark bg */
+            --accent: #00E676; /* EV green */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .nav {
+            padding: 1rem;
+            background: rgba(0,0,0,0.8);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 8rem 2rem 4rem;
+            background: linear-gradient(45deg, #2c2c2c 0%, #000 100%);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .feature-card {
+            background: #2a2a2a;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--primary);
+        }
+
+        .editor-container {
+            width: 100%;
+            height: 600px;
+            background: #000;
+            position: relative;
+        }
+
+        .wallet-btn {
+            background: var(--primary);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .wallet-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .ev-badge {
+            background: var(--accent);
+            color: black;
+            padding: 0.3rem 0.7rem;
+            border-radius: 15px;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="#"><strong>NFTEED IT</strong></a>
+        <div>
+            <a href="#features">Features</a>
+            <a href="#editor">Editor</a>
+            <a href="#market">Market</a>
+            <button class="wallet-btn">Connect Wallet</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>🚗 I NFTEED IT!</h1>
+        <p>Tokenize, customize, and trade automotive assets</p>
+        <div style="margin: 2rem 0;">
+            <button class="wallet-btn">Start Minting</button>
+            <button class="wallet-btn" style="background: var(--accent);">Explore Garage</button>
+        </div>
+    </section>
+
+    <section id="features" class="features-grid">
+        <div class="feature-card">
+            <h3>🔧 Classic Cars</h3>
+            <p>Mint NFTs with historical provenance and restoration logs</p>
+            <span class="ev-badge">VIN Verification</span>
+        </div>
+
+        <div class="feature-card">
+            <h3>⚡ Modern EVs</h3>
+            <p>Tokenize performance metrics and battery health</p>
+            <span class="ev-badge">Live API Data</span>
+        </div>
+
+        <div class="feature-card">
+            <h3>🛠️ Mechanics</h3>
+            <p>Offer repair services as NFTs with automated royalties</p>
+            <span class="ev-badge">KYC Verified</span>
+        </div>
+    </section>
+
+    <section class="editor-container" id="editor">
+        <!-- 3D Editor Placeholder -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <h2>🚘 AR Garage Editor</h2>
+            <p>Loading 3D customization interface...</p>
+        </div>
+    </section>
+
+    <script>
+        // Wallet connection logic
+        document.querySelector('.wallet-btn').addEventListener('click', async () => {
+            try {
+                if (window.ethereum) {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    alert('Wallet connected!');
+                } else {
+                    alert('Please install MetaMask!');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Three.js 3D Editor Initialization (placeholder)
+        /*
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        */
+    </script>
+</body>
+</html><!-- Create index.html with this code -->
 <!DOCTYPE html>
 <html>
 <head>
