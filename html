@@ -2,6 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>NFTEED IT! - Tokenize Your Ride</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="#"><span class="nfteed-badge">NFTEED•IT!</span></a>
+        <div>
+            <a href="#features">Features</a>
+            <a href="#editor">Editor</a>
+            <button class="wallet-btn">Connect Wallet</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>I NFTEED IT!</h1>
+        <p>From Garage to Blockchain: Your Ride, Tokenized ⚡</p>
+        <div class="mint-counter" id="mintCounter">
+            <span id="mintCount">0</span> Rides NFTEED!
+        </div>
+    </section>
+
+    <!-- 3D Editor -->
+    <div id="editor"></div>
+
+    <script src="three.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <title>NFTEED IT! - Turn Your Ride into NFTs</title>
     <style>
         :root {
