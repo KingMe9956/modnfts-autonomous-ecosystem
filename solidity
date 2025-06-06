@@ -1,6 +1,97 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+contract MechanicReputation is AccessControl {
+    bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
+    
+    struct MechanicProfile {
+        uint256 reputationScore;
+        uint256 completedServices;
+        uint256 disputeCount;
+        string[] certifications;
+        mapping(string => bool) specializations;
+    }
+
+    mapping(address => MechanicProfile) private _mechanics;
+    mapping(bytes32 => address[]) private _specializedMechanics;
+
+    event MechanicVerified(address indexed mechanic, string[] certifications);
+    event ServiceCompleted(address indexed mechanic, uint256 scoreChange);
+    event DisputeFiled(address indexed mechanic, uint256 penalty);
+
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(VERIFIER_ROLE, msg.sender);
+    }
+
+    function verifyMechanic(
+        address mechanic,
+        string[] calldata certifications,
+        string[] calldata specializations
+    ) external onlyRole(VERIFIER_ROLE) {
+        MechanicProfile storage profile = _mechanics[mechanic];
+        
+        for (uint i = 0; i < certifications.length; i++) {
+            profile.certifications.push(certifications[i]);
+        }
+
+        for (uint i = 0; i < specializations.length; i++) {
+            profile.specializations[specializations[i]] = true;
+            bytes32 specHash = keccak256(abi.encodePacked(specializations[i]));
+            _specializedMechanics[specHash].push(mechanic);
+        }
+
+        profile.reputationScore = 100; // Base score
+        emit MechanicVerified(mechanic, certifications);
+    }
+
+    function updateReputation(
+        address mechanic,
+        int256 scoreDelta,
+        bool hasDispute
+    ) external onlyRole(VERIFIER_ROLE) {
+        MechanicProfile storage profile = _mechanics[mechanic];
+        
+        if (scoreDelta > 0) {
+            profile.reputationScore += uint256(scoreDelta);
+            profile.completedServices++;
+        } else {
+            profile.reputationScore = profile.reputationScore > uint256(-scoreDelta) ? 
+                profile.reputationScore - uint256(-scoreDelta) : 0;
+        }
+
+        if (hasDispute) {
+            profile.disputeCount++;
+            emit DisputeFiled(mechanic, uint256(-scoreDelta));
+        }
+
+        emit ServiceCompleted(mechanic, scoreDelta);
+    }
+
+    function getMechanicProfile(address mechanic) external view returns (
+        uint256 score,
+        uint256 services,
+        uint256 disputes,
+        string[] memory certs
+    ) {
+        MechanicProfile storage profile = _mechanics[mechanic];
+        return (
+            profile.reputationScore,
+            profile.completedServices,
+            profile.disputeCount,
+            profile.certifications
+        );
+    }
+
+    function findSpecialists(string calldata specialization) external view returns (address[] memory) {
+        bytes32 specHash = keccak256(abi.encodePacked(specialization));
+        return _specializedMechanics[specHash];
+    }
+}// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
