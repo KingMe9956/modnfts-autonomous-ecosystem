@@ -1,4 +1,14 @@
-rule serviceRecordPermanence(uint256 tokenId, uint recordId) {
+// Royalties always flow to owner
+rule royaltyStewardship(address newOwner) {
+    transferOwnership(newOwner);
+    assert royaltyInfo(0, 1 ether).receiver == newOwner,
+        "Royalty recipient must follow ownership";
+}// After minting, VIN cannot change
+invariant vinImmutability(uint256 tokenId) {
+    VehicleDetails memory d = getVehicleDetails(tokenId);
+    assert always(d.vin == initially(d.vin)),
+        "VIN must remain immutable";
+}rule serviceRecordPermanence(uint256 tokenId, uint recordId) {
     ServiceRecord memory sr = getServiceHistory(tokenId)[recordId];
     assert sr.timestamp <= block.timestamp,
         "Service records cannot be from the future";
