@@ -1,5 +1,66 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
+import { ethers } from "hardhat";
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  const { deployments, getNamedAccounts, network } = hre;
+  const { deploy, execute } = deployments;
+  const { deployer } = await getNamedAccounts();
+
+  // 1. Deploy Core Contracts
+  const automotiveNFT = await deploy("ModNFTsAutomotive", {
+    from: deployer,
+    log: true,
+    waitConfirmations: network.name === "mainnet" ? 5 : 1,
+  });
+
+  const reputation = await deploy("MechanicReputation", {
+    from: deployer,
+    log: true,
+    waitConfirmations: network.name === "mainnet" ? 5 : 1,
+  });
+
+  // 2. Link Contracts
+  await execute(
+    "ModNFTsAutomotive",
+    { from: deployer, log: true },
+    "setReputationContract",
+    reputation.address
+  );
+
+  // 3. Initialize Reputation System
+  const initialMechanics = JSON.parse(
+    process.env.INITIAL_MECHANICS || 
+    '[{"address":"0x123...","certs":["ASE","EV-Tech"],"specs":["Tesla","Classic"]}]'
+  );
+
+  for (const mechanic of initialMechanics) {
+    await execute(
+      "MechanicReputation",
+      { from: deployer, log: true },
+      "verifyMechanic",
+      mechanic.address,
+      mechanic.certs,
+      mechanic.specs
+    );
+  }
+
+  // 4. Configure Access Controls
+  const VERIFIERS = process.env.VERIFIERS?.split(",") || [deployer];
+  for (const verifier of VERIFIERS) {
+    await execute(
+      "MechanicReputation",
+      { from: deployer, log: true },
+      "grantRole",
+      ethers.keccak256(ethers.toUtf8Bytes("VERIFIER_ROLE")),
+      verifier
+    );
+  }
+};
+
+export default func;
+tag(func, "core");import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
