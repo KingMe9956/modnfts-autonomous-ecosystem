@@ -1,0 +1,123 @@
+// test/ModNFTsAutomotive.test.ts
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+
+describe("ModNFTsAutomotive", function () {
+  async function deployContractFixture() {
+    const [owner, addr1, addr2, mechanic] = await ethers.getSigners();
+
+    const ModNFTs = await ethers.getContractFactory("ModNFTsAutomotive");
+    const contract = await ModNFTs.deploy();
+
+    // Common test data
+    const validVIN = "1HGCM82633A004352";
+    const invalidVIN = "shortvin";
+    const serviceDetails = "Replaced battery pack";
+    const ipfsHash = ethers.encodeBytes32String("QmT4s...");
+
+    return { contract, owner, addr1, addr2, mechanic, validVIN, invalidVIN, serviceDetails, ipfsHash };
+  }
+
+  describe("Vehicle Minting", () => {
+    it("Should mint a classic car NFT", async () => {
+      const { contract, addr1, validVIN } = await loadFixture(deployContractFixture);
+      await expect(contract.mintVehicle(addr1.address, validVIN, 0, false, 2000))
+        .to.emit(contract, "VehicleMinted")
+        .withArgs(addr1.address, 0, 0);
+    });
+
+    it("Should prevent minting with invalid VIN", async () => {
+      const { contract, addr1, invalidVIN } = await loadFixture(deployContractFixture);
+      await expect(contract.mintVehicle(addr1.address, invalidVIN, 0, false, 2000))
+        .to.be.revertedWith("Invalid VIN");
+    });
+
+    it("Should store EV specifications correctly", async () => {
+      const { contract, addr1, validVIN } = await loadFixture(deployContractFixture);
+      await contract.mintVehicle(addr1.address, validVIN, 1, true, 75);
+      const details = await contract.getVehicleDetails(0);
+      expect(details.isElectric).to.be.true;
+      expect(details.batteryCapacity).to.equal(75);
+    });
+  });
+
+  describe("Service Records", () => {
+    it("Should add verified mechanic service", async () => {
+      const { contract, owner, addr1, mechanic, validVIN, serviceDetails, ipfsHash } = await loadFixture(deployContractFixture);
+      
+      // Setup
+      await contract.mintVehicle(addr1.address, validVIN, 0, false, 2000);
+      await contract.verifyMechanic(mechanic.address, "ipfs://cert");
+      
+      // Test
+      await expect(contract.connect(addr1).addServiceRecord(0, mechanic.address, serviceDetails, ipfsHash))
+        .to.emit(contract, "ServiceRecordAdded")
+        .withArgs(0, mechanic.address);
+      
+      const history = await contract.getServiceHistory(0);
+      expect(history.length).to.equal(1);
+      expect(history[0].serviceDetails).to.equal(serviceDetails);
+    });
+
+    it("Should block unverified mechanics", async () => {
+      const { contract, addr1, mechanic, validVIN, serviceDetails, ipfsHash } = await loadFixture(deployContractFixture);
+      
+      await contract.mintVehicle(addr1.address, validVIN, 0, false, 2000);
+      
+      await expect(contract.connect(addr1).addServiceRecord(0, mechanic.address, serviceDetails, ipfsHash))
+        .to.be.revertedWith("Unverified mechanic");
+    });
+  });
+
+  describe("Ownership Transfers", () => {
+    it("Should track ownership history", async () => {
+      const { contract, addr1, addr2, validVIN } = await loadFixture(deployContractFixture);
+      
+      await contract.mintVehicle(addr1.address, validVIN, 0, false, 2000);
+      await contract.connect(addr1).transferVehicle(addr2.address, 0);
+      
+      const details = await contract.getVehicleDetails(0);
+      expect(details.previousOwners.length).to.equal(1);
+      expect(details.mileage).to.equal(1000);
+    });
+
+    it("Should enforce transfer permissions", async () => {
+      const { contract, addr1, addr2, validVIN } = await loadFixture(deployContractFixture);
+      
+      await contract.mintVehicle(addr1.address, validVIN, 0, false, 2000);
+      
+      await expect(contract.connect(addr2).transferVehicle(addr2.address, 0))
+        .to.be.revertedWith("ERC721InsufficientApproval");
+    });
+  });
+
+  describe("Royalty System", () => {
+    it("Should calculate 7.5% royalty", async () => {
+      const { contract } = await loadFixture(deployContractFixture);
+      
+      const salePrice = ethers.parseEther("1.0");
+      const [receiver, royalty] = await contract.royaltyInfo(0, salePrice);
+      
+      expect(receiver).to.equal(await contract.owner());
+      expect(royalty).to.equal(ethers.parseEther("0.075"));
+    });
+  });
+
+  describe("Mechanic Reputation", () => {
+    it("Should allow owner to verify mechanics", async () => {
+      const { contract, owner, mechanic } = await loadFixture(deployContractFixture);
+      
+      await contract.verifyMechanic(mechanic.address, "ipfs://cert");
+      const rep = await contract.getMechanicReputation(mechanic.address);
+      expect(rep).to.equal(1);
+    });
+
+    it("Should prevent unauthorized verification", async () => {
+      const { contract, addr1, mechanic } = await loadFixture(deployContractFixture);
+      
+      await expect(contract.connect(addr1).verifyMechanic(mechanic.address, "ipfs://cert"))
+        .to.be.revertedWithCustomError(contract, "OwnableUnauthorizedAccount");
+    });
+  });
+});
