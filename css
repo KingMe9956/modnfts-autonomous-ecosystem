@@ -1,0 +1,41 @@
+:root {
+    --burn-rubber: #FF4D00;
+    --carbon-black: #000;
+    --electro-juice: #00E676;
+}
+
+body {
+    background: var(--carbon-black);
+    color: white;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.nav {
+    padding: 1rem;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    top: 0;
+}
+
+.wallet-btn {
+    background: var(--burn-rubber);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.hero {
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+}
+
+#editor {
+    width: 100%;
+    height: 600px;
+}
