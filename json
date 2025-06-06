@@ -1,0 +1,33 @@
+{
+  "userType": "mechanic|owner|collector",
+  "verifiedCerts": ["ASE", "EV-Tech"],
+  "garage": "/v1/assets/garage/123"
+}
+{
+  "existsOnChain": true,
+  "previousOwners": 3,
+  "serviceRecords": "/v1/nfts/vin/1HGCM82633A004352/services"
+}
+{
+  "cid": "Qm...",
+  "gateways": [
+    "https://nfteedit.com/ipfs/Qm...",
+    "https://modnfts.com/ipfs/Qm..."
+  ]
+}
+{
+  "modelCid": "Qm...",
+  "modifications": {
+    "paint": "#ff0000",
+    "wheels": "QmWheel2"
+  }
+}
+{
+  "batteryHealth": 92,
+  "rangeEstimate": 267,
+  "lastCharge": "2024-02-15T12:34:56Z"
+} ctrl
+{
+  "codes": ["P0420"],
+  "recommendedServices": ["exhaustSystemCheck"]
+}
