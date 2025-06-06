@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Previous head content remains -->
+    <style>
+        /* Add these new styles */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-alert {
+            background: #ff4444;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Previous body content remains -->
+
+    <!-- Updated editor section -->
+    <section class="editor-container" id="editor">
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+            <span id="progress-text" style="margin-left: 1rem;">Loading... 0%</span>
+        </div>
+        
+        <div class="error-alert" id="error-alert">
+            Failed to load model. Please try again.
+        </div>
+
+        <div id="editor-ui" style="position: absolute; top: 20px; left: 20px; z-index: 1;">
+            <!-- Add Mint button -->
+            <button onclick="mintNFT()" class="wallet-btn">Mint NFT</button>
+            <!-- Existing controls remain -->
+        </div>
+    </section>
+
+    <script type="module">
+        // Configuration (Update these with your IPFS CIDs)
+        const MODEL_CIDS = {
+            classic: 'QmXxx...ClassicCarCID',
+            modern: 'QmYyy...ModernCarCID',
+            wheels: [
+                'QmWheel1CID',
+                'QmWheel2CID',
+                'QmWheel3CID'
+            ]
+        };
+
+        const IPFS_GATEWAYS = [
+            'https://ipfs.nfteedit.com/ipfs/',
+            'https://modnfts.com/ipfs/',
+            'https://ipfs.io/ipfs/'
+        ];
+
+        // Updated model loading with IPFS
+        async function loadCarModel(type) {
+            showLoading();
+            clearError();
+            
+            try {
+                const cid = MODEL_CIDS[type];
+                const url = await resolveIPFS(cid);
+                
+                const loader = new GLTFLoader();
+                loader.load(url, 
+                    (gltf) => {
+                        if (currentCar) scene.remove(currentCar);
+                        currentCar = gltf.scene;
+                        scene.add(currentCar);
+                        centerModel();
+                        hideLoading();
+                    },
+                    (xhr) => {
+                        const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
+                        document.getElementById('progress-text').textContent = `Loading... ${percent}%`;
+                    },
+                    (error) => {
+                        showError();
+                        console.error('Load error:', error);
+                    }
+                );
+            } catch (error) {
+                showError();
+                console.error('IPFS resolution error:', error);
+            }
+        }
+
+        async function resolveIPFS(cid) {
+            for (const gateway of IPFS_GATEWAYS) {
+                try {
+                    const testUrl = `${gateway}${cid}?now=${Date.now()}`;
+                    await fetch(testUrl, { method: 'HEAD' });
+                    return `${gateway}${cid}`;
+                } catch {
+                    continue;
+                }
+            }
+            throw new Error('All IPFS gateways unavailable');
+        }
+
+        // Enhanced wheel swapping
+        async function changeWheels() {
+            showLoading();
+            try {
+                const wheelCid = MODEL_CIDS.wheels[wheelIndex];
+                const wheelUrl = await resolveIPFS(wheelCid);
+                
+                const loader = new GLTFLoader();
+                const gltf = await loader.loadAsync(wheelUrl);
+                const newWheel = gltf.scene.children[0];
+                
+                currentCar.traverse((child) => {
+                    if (child.name.includes('wheel')) {
+                        const oldWheel = child;
+                        newWheel.position.copy(oldWheel.position);
+                        newWheel.rotation.copy(oldWheel.rotation);
+                        oldWheel.parent.add(newWheel);
+                        oldWheel.parent.remove(oldWheel);
+                    }
+                });
+                
+                wheelIndex = (wheelIndex + 1) % MODEL_CIDS.wheels.length;
+            } catch (error) {
+                showError();
+                console.error('Wheel swap failed:', error);
+            }
+            hideLoading();
+        }
+
+        // Mint NFT functionality
+        async function mintNFT() {
+            showLoading();
+            try {
+                // Capture 3D view
+                const canvas = document.querySelector('canvas');
+                const imageData = canvas.toDataURL('image/png');
+                
+                // Upload to IPFS
+                const imageCid = await uploadToIPFS(imageData);
+                const metadata = {
+                    name: 'NFTEED Car',
+                    image: `ipfs://${imageCid}`,
+                    attributes: {
+                        model: document.getElementById('car-select').value,
+                        color: document.getElementById('color-picker').value,
+                        wheels: MODEL_CIDS.wheels[wheelIndex]
+                    }
+                };
+                
+                const metadataCid = await uploadToIPFS(JSON.stringify(metadata));
+                console.log('NFT Metadata CID:', metadataCid);
+                
+                // Here you would mint using modNFTs.com contracts
+                alert(`Ready to mint! Metadata CID: ${metadataCid}`);
+            } catch (error) {
+                showError();
+                console.error('Minting failed:', error);
+            }
+            hideLoading();
+        }
+
+        async function uploadToIPFS(data) {
+            // Implement actual IPFS upload using js-ipfs or service
+            // This is a mock implementation
+            return 'QmMockCID' + Math.random().toString(36).slice(2);
+        }
+
+        // UI Helpers
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError() {
+            document.getElementById('error-alert').style.display = 'block';
+        }
+
+        function clearError() {
+            document.getElementById('error-alert').style.display = 'none';
+        }
+
+        // Initialize as before
+    </script>
+</body>
+</html>
