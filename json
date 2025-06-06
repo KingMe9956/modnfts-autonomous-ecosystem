@@ -1,4 +1,4 @@
-{
+P0420{
   "userType": "mechanic|owner|collector",
   "verifiedCerts": ["ASE", "EV-Tech"],
   "garage": "/v1/assets/garage/123"
@@ -30,4 +30,15 @@
 {
   "codes": ["P0420"],
   "recommendedServices": ["exhaustSystemCheck"]
+}
+{
+  "files": ["contracts/ModNFTsAutomotive.sol"],
+  "verify": "ModNFTsAutomotive:certora/specs/ModNFTs.spec",
+  "rule_sanity": "basic",
+  "optimistic_loop": true,
+  "loop_iter": "3",
+  "parametric_contracts": ["ModNFTsAutomotive"],
+  "solc": "0.8.20",
+  "prover_version": "2.3.0",
+  "server": "production"
 }
