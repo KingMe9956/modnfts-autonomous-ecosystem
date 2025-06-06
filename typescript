@@ -1,4 +1,53 @@
-// test/ModNFTsAutomotive.test.ts
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  const { deployments, getNamedAccounts } = hre;
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
+
+  const automotiveNFT = await deploy("ModNFTsAutomotive", {
+    from: deployer,
+    args: [],
+    log: true,
+    autoMine: true,
+  });
+
+  const reputation = await deploy("MechanicReputation", {
+    from: deployer,
+    args: [],
+    log: true,
+  });
+
+  // Initialize with sample mechanics
+  const reputationContract = await hre.ethers.getContractAt(
+    "MechanicReputation",
+    reputation.address
+  );
+  
+  const MECHANICS = [
+    {
+      address: "0x123...",
+      certs: ["ASE", "EV-Tech"],
+      specs: ["Tesla", "Classic"]
+    },
+    {
+      address: "0x456...", 
+      certs: ["Diesel"],
+      specs: ["HeavyDuty"]
+    }
+  ];
+
+  for (const mechanic of MECHANICS) {
+    await reputationContract.verifyMechanic(
+      mechanic.address,
+      mechanic.certs,
+      mechanic.specs
+    );
+  }
+};
+
+export default func;// test/ModNFTsAutomotive.test.ts
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
