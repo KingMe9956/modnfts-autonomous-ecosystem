@@ -1,4 +1,16 @@
 # Deploy to modNFTs network
+npx hardhat deploy --network modnfts --tags core
+
+# Verify contracts
+REACT_APP_AUTOMOTIVE_ADDR=0x... \
+REACT_APP_REPUTATION_ADDR=0x... \
+npx hardhat run scripts/verify.ts --network modnfts
+
+# Post-Deploy Configuration
+# (Add additional mechanics after deployment)
+npx hardhat console --network modnfts
+> const rep = await ethers.getContractAt("MechanicReputation", "0x...");
+> await rep.verifyMechanic("0xNEWMECH", ["Diesel"], ["HeavyDuty"]);# Deploy to modNFTs network
 npx hardhat deploy --network modnfts --tags MechanicReputation,ModNFTsAutomotive
 
 # Verify contracts
