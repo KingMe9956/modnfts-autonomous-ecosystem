@@ -1,4 +1,7 @@
-[2024-02-16 10:00:00] Verification report for ModNFTsAutomotive
+[Counterexample] vinLength failed:
+  VIN = "1HGCM82633A00435" (16 chars)
+  Call trace:
+    mintVehicle(0x123..., "1HGCM82633A00435", 0, false, 2000)[2024-02-16 10:00:00] Verification report for ModNFTsAutomotive
 ✔ Rule vinLength: Passed (all 23 cases)
 ✔ Invariant uniqueOwnership: Passed (inductive proof)
 ✔ Rule mechanicVerification: Passed (access control)
