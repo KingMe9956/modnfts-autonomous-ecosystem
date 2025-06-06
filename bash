@@ -1,4 +1,11 @@
-# Install Certora Prover
+# Deploy to modNFTs network
+npx hardhat deploy --network modnfts --tags MechanicReputation,ModNFTsAutomotive
+
+# Verify contracts
+npx hardhat etherscan-verify --network modnfts
+
+# Add additional verifiers
+VERIFIERS="0xabc,0xdef" npx hardhat run deploy/01_configure_roles.ts --network modnfts# Install Certora Prover
 pip install certora-cli
 export CERTORAKEY=<your-api-key>  # Get from certora.com
 
