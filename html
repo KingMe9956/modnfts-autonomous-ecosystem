@@ -1,6 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>NFTEED IT! - Turn Your Ride into NFTs</title>
+    <style>
+        :root {
+            --burn-rubber: #FF4D00;  /* Updated semantic color name */
+            --carbon-black: #000000;
+            --electro-juice: #00E676;
+        }
+
+        /* New badge animation */
+        .nfteed-badge {
+            animation: burn 2s infinite alternate;
+            background: linear-gradient(45deg, var(--burn-rubber), #FF8000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes burn {
+            0% { text-shadow: 0 0 10px var(--burn-rubber); }
+            100% { text-shadow: 0 0 20px #FF8000; }
+        }
+
+        /* Updated hero section */
+        .hero h1 {
+            font-family: 'Impact', sans-serif;
+            text-transform: uppercase;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero h1::after {
+            content: "🚘";
+            margin-left: 1rem;
+            filter: drop-shadow(0 0 10px var(--burn-rubber));
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="#"><span class="nfteed-badge">NFTEED•IT!</span></a>
+        <!-- Rest of nav remains -->
+    </nav>
+
+    <section class="hero">
+        <h1>I NFTEED IT!</h1>
+        <p>From Garage to Blockchain: Your Ride, Tokenized ⚡</p>
+        <div class="mint-counter" id="mintCounter">
+            <span id="mintCount">12,345</span> Rides NFTEED!
+        </div>
+    </section>
+
+    <!-- In the editor section -->
+    <div id="editor-ui">
+        <button class="wallet-btn" onclick="mintNFT()">
+            🚀 NFTEED THIS RIDE!
+        </button>
+    </div>
+
+    <script>
+        // Updated mint function with branding
+        async function mintNFT() {
+            showLoading();
+            try {
+                // ... existing mint logic ...
+                
+                // Success message
+                const mintCount = document.getElementById('mintCount');
+                mintCount.textContent = parseInt(mintCount.textContent) + 1;
+                
+                // Play engine sound
+                new Audio('nfteed-it.mp3').play();
+                
+                alert(`Success! You just NFTEED IT! 🎉\nView TX: ${txHash}`);
+            } catch (error) {
+                alert("Couldn't NFTEED IT! 😢\nError: " + error.message);
+            }
+            hideLoading();
+        }
+
+        // New easter egg
+        let revCount = 0;
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyN') revCount++;
+            if (revCount === 3) {
+                document.body.classList.add('nfteed-mode');
+                alert('NFTEED IT! mode activated! 🔥');
+            }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
     <!-- Previous head content remains -->
     <style>
         /* Add these new styles */
