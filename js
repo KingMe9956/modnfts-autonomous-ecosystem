@@ -14,3 +14,11 @@ async function swapPart(partName, newPartUrl) {
     console.error('Error swapping part:', error);
   }
 }
+// In your app
+import { create } from 'ipfs-core';
+
+const ipfs = await create();
+async function uploadToIPFS(data) {
+    const { cid } = await ipfs.add(data);
+    return cid.toString();
+}
