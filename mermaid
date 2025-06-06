@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant Owner
+    participant Contract
+    participant Mechanic
+    participant ServiceNFT
+    
+    Owner->>Contract: verifyMechanic(0x123..., ["ASE"], ["EV"])
+    Contract->>Mechanic: ReputationScore = 100
+    Mechanic->>ServiceNFT: mintServiceNFT("Battery Check")
+    ServiceNFT->>Contract: logService(0x123..., 25)
+    Contract->>Mechanic: ReputationScore += 25
+    Client->>Contract: fileDispute(0x123...)
+    Contract->>Owner: disputeNotification
+    Owner->>Contract: resolveDispute(0x123..., false, 50)
+    Contract->>Mechanic: ReputationScore -= 50
