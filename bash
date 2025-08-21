@@ -25,8 +25,8 @@ export CERTORAKEY=<your-api-key>  # Get from certora.com
 mkdir certora
 touch certora/{specs,conf}npx hardhat coverage --network hardhat$ npx hardhat test
 
-  ModNFTsAutomotive
-    Vehicle Minting
+  ModNFTs Automotive
+    Vehicle Title Minting
       ✓ Should mint a classic car NFT
       ✓ Should prevent minting with invalid VIN (45ms)
       ✓ Should store EV specifications correctly
@@ -45,7 +45,7 @@ touch certora/{specs,conf}npx hardhat coverage --network hardhat$ npx hardhat te
   10 passing (2s)$ npx hardhat test
 
   ModNFTsAutomotive
-    Vehicle Minting
+    Vehicle Title Minting
       ✓ Should mint a classic car NFT
       ✓ Should prevent minting with invalid VIN (45ms)
       ✓ Should store EV specifications correctly
